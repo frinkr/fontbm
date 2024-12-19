@@ -41,7 +41,7 @@ public:
         std::int32_t rsbDelta;
     };
 
-    Font(Library& library, const std::string& fontFile, int ptsize, const int faceIndex, const bool monochrome)
+    Font(Library& library, const std::string& fontFile, int ptsize, int ascender_override, const int faceIndex, const bool monochrome)
         : library(library), monochrome_(monochrome)
     {
         if (!library.library)
@@ -75,7 +75,7 @@ public:
             // height  = FT_CEIL(FT_MulFix(face->height, scale));
             height =  std::lround(static_cast<float>(face->size->metrics.height) / static_cast<float>(1 << 6));
             //height =  std::lround(FT_MulFix(face->height, scale) / static_cast<float>(1 << 6));
-            ascent = FT_CEIL(FT_MulFix(face->ascender, scale));
+            ascent = FT_CEIL(FT_MulFix(ascender_override < 0? face->ascender: (ascender_override? ascender_override: face->bbox.yMax), scale));
             //ascent = std::lround(FT_MulFix(face->ascender, scale) / static_cast<float>(1 << 6));
             descent = FT_FLOOR(FT_MulFix(face->descender, scale));
         }
