@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include "FtInclude.h"
+#include FT_SYNTHESIS_H
 #include "FtException.h"
 #include "../utils/StringMaker.h"
 
@@ -41,8 +42,8 @@ public:
         std::int32_t rsbDelta;
     };
 
-    Font(Library& library, const std::string& fontFile, int ptsize, int ascender_override, const int faceIndex, const bool monochrome)
-        : library(library), monochrome_(monochrome)
+    Font(Library& library, const std::string& fontFile, int ptsize, int ascender_override, const int faceIndex, const bool monochrome, bool bold)
+        : library(library), monochrome_(monochrome), bold_(bold)
     {
         if (!library.library)
             throw std::runtime_error("Library is not initialized");
@@ -135,11 +136,23 @@ public:
     GlyphMetrics renderGlyph(std::uint32_t* buffer, std::uint32_t surfaceW, std::uint32_t surfaceH, int x, int y,
             std::uint32_t ch, std::uint32_t color) const
     {
-        FT_Int32 loadFlags = FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT;
-        if (monochrome_)
-            loadFlags |= FT_LOAD_MONOCHROME;
+        FT_Error error = 0;
+        if (bold_) {
+            FT_UInt glyphIndex = FT_Get_Char_Index(face, ch);
+            error = FT_Load_Glyph(face, glyphIndex, FT_LOAD_DEFAULT);
+            if (!error) {
+                FT_GlyphSlot_Embolden(face->glyph);
+                error = FT_Render_Glyph(face->glyph, monochrome_? FT_RENDER_MODE_MONO:  FT_RENDER_MODE_NORMAL);
+            } 
+        }
+        else {
+            FT_Int32 loadFlags = FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT;
+            if (monochrome_)
+                loadFlags |= FT_LOAD_MONOCHROME;
 
-        const int error = FT_Load_Char(face, ch, loadFlags);
+            error = FT_Load_Char(face, ch, loadFlags);
+        }
+
         if (error)
             throw std::runtime_error(StringMaker() << "Error Load glyph " << ch << " " << error);
 
@@ -323,6 +336,7 @@ public:
     int style;
     int outline;
     bool monochrome_;
+    bool bold_;
 
     /* Whether kerning is desired */
     int kerning;

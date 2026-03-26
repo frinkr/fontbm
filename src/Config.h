@@ -81,6 +81,7 @@ struct Config
     bool backgroundTransparent = true;
     std::uint16_t fontSize = 16;
     std::int16_t ascender_override = -1;
+    bool bold = false;
     Padding padding;
     Spacing spacing;
     Alignment alignment;
