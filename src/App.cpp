@@ -46,10 +46,10 @@ App::Glyphs App::collectGlyphInfo(const ft::Font& font, const std::set<std::uint
         }
         else
         {
-            std::cout << "warning: glyph " << id << " not found";
+            std::cerr << "warning: glyph " << id << " not found";
             if (id == 65279)
-                std::cout << " (it looks like Unicode byte order mark (BOM))";
-            std::cout << "." << std::endl;
+                std::cerr << " (it looks like Unicode byte order mark (BOM))";
+            std::cerr << "." << std::endl;
         }
     }
 
@@ -248,7 +248,7 @@ void App::writeFontInfoFile(const Glyphs& glyphs, const Config& config, const ft
 
     f.info.face = font.getFamilyNameOr("unknown");
     f.info.size = -static_cast<std::int16_t>(config.fontSize);
-    f.info.smooth = config.monochrome;
+    f.info.smooth = !config.monochrome;
     f.info.unicode = true;
     f.info.bold = font.isBold();
     f.info.italic = font.isItalic();
@@ -272,7 +272,6 @@ void App::writeFontInfoFile(const Glyphs& glyphs, const Config& config, const ft
     f.common.redChnl = 4;
     f.common.greenChnl = 4;
     f.common.blueChnl = 4;
-    f.common.totalHeight = static_cast<std::uint16_t>(font.totalHeight);
 
     f.pages = fileNames;
 
@@ -325,8 +324,6 @@ void App::writeFontInfoFile(const Glyphs& glyphs, const Config& config, const ft
         }
     }
 
-    f.extraInfo = config.extraInfo;
-
     const auto dataFileName = config.output + ".fnt";
     switch (config.dataFormat) {
         case Config::DataFormat::Xml:
@@ -340,9 +337,6 @@ void App::writeFontInfoFile(const Glyphs& glyphs, const Config& config, const ft
             break;
         case Config::DataFormat::Json:
             f.writeToJsonFile(dataFileName);
-            break;
-        case Config::DataFormat::Cbor:
-            f.writeToCborFile(dataFileName);
             break;
     }
 }

@@ -71,14 +71,14 @@ public:
 
             /* Get the scalable font metrics for this font */
             const auto scale = face->size->metrics.y_scale;
-            yMin = FT_FLOOR(FT_MulFix(face->bbox.yMin, scale));
-            yMax  = FT_CEIL(FT_MulFix(face->bbox.yMax, scale));
-            // height  = FT_CEIL(FT_MulFix(face->height, scale));
-            height =  std::lround(static_cast<float>(face->size->metrics.height) / static_cast<float>(1 << 6));
-            //height =  std::lround(FT_MulFix(face->height, scale) / static_cast<float>(1 << 6));
+            //yMin = FT_FLOOR(FT_MulFix(face->bbox.yMin, scale));
+            //yMax = FT_CEIL(FT_MulFix(face->bbox.yMax, scale));
+            //height  = FT_CEIL(FT_MulFix(face->height, scale));
+            //height = std::lround(static_cast<float>(face->size->metrics.height) / static_cast<float>(1 << 6));
+            height = std::lround(FT_MulFix(face->height, scale) / static_cast<float>(1 << 6));
             ascent = FT_CEIL(FT_MulFix(ascender_override < 0? face->ascender: (ascender_override? ascender_override: face->bbox.yMax), scale));
             //ascent = std::lround(FT_MulFix(face->ascender, scale) / static_cast<float>(1 << 6));
-            descent = FT_FLOOR(FT_MulFix(face->descender, scale));
+            //descent = FT_FLOOR(FT_MulFix(face->descender, scale));
         }
         else
         {
@@ -100,10 +100,10 @@ public:
              * or sometimes cannot be determined.
              * */
             height = face->available_sizes[ptsize].height;
-            yMax = height;
-            yMin = 0;
+            //yMax = height;
+            //yMin = 0;
             ascent = height;
-            descent = 0;
+            //descent = 0;
         }
 
         /* Initialize the font face style */
@@ -122,10 +122,6 @@ public:
         /* x offset = cos(((90.0-12)/360)*2*M_PI), or 12 degree angle */
         glyph_italics = 0.207f;
         glyph_italics *= height;
-
-        totalHeight = yMax - yMin;
-
-
     }
 
     ~Font()
@@ -260,7 +256,7 @@ public:
 
         const auto scale = face->size->metrics.y_scale;
         std::cout << "face->size->metrics.y_scale " << scale << " (" << face->size->metrics.y_scale / 64.0 << ")" << "\n";
-        std::cout << "face->size->metrics.y_ppem " << face->size->metrics.x_ppem << "\n";
+        std::cout << "face->size->metrics.x_ppem " << face->size->metrics.x_ppem << "\n";
         std::cout << "face->bbox.yMax " << FT_CEIL(FT_MulFix(face->bbox.yMax, scale)) << "\n";
         std::cout << "face->bbox.yMin " << FT_FLOOR(FT_MulFix(face->bbox.yMin, scale)) << "\n";
         std::cout << "face->ascender " << FT_CEIL(FT_MulFix(face->ascender, scale)) << "\n";
@@ -322,11 +318,11 @@ public:
     Library& library;
     FT_Face face = nullptr;
     int height;
-    int yMax;
-    int yMin;
+    //int yMax;
+    //int yMin;
     int ascent;
-    int descent;
-    int totalHeight = 0;
+    //int descent;
+    //int totalHeight = 0;
 
     /* For non-scalable formats, we must remember which font index size */
     int font_size_family;

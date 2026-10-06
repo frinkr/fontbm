@@ -12,8 +12,7 @@ struct Config
         Xml,
         Text,
         Bin,
-        Json,
-        Cbor
+        Json
     };
 
     enum class KerningPairs {
@@ -42,7 +41,7 @@ struct Config
 
         bool operator == (const Color& other) const
         {
-            return r == other.r && g == other.b && b == other.b;
+            return r == other.r && g == other.g && b == other.b;
         }
     };
 
@@ -92,7 +91,6 @@ struct Config
     std::uint32_t maxTextureCount = 0;
     bool useMaxTextureCount = false;
     bool monochrome = false;
-    bool extraInfo = false;
     bool cropTexturesWidth = false;
     bool cropTexturesHeight = false;
     bool verbose = false;
