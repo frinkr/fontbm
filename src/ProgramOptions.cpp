@@ -57,6 +57,7 @@ Config ProgramOptions::parseCommandLine(int argc, char* argv[])
         std::string dataFormat;
         std::string kerningPairs;
         std::string textureNameSuffix;
+        std::vector<std::string> vars;
 
         cxxopts::Options options("fontbm",
             "Renders a TrueType/OpenType font into a bitmap font (texture pages plus\n"
@@ -108,13 +109,14 @@ Config ProgramOptions::parseCommandLine(int argc, char* argv[])
         
         options.add_options("Extension")
             ("ascender-override", "override the font ascender (-1: disabled, 0: override with the maximum ascender of all glyphs, positive value: custom ascender in font units), default: -1", cxxopts::value<std::int16_t>(config.ascender_override)->default_value("-1"))
+            ("vars", "variable font axes, in the form axis=value, for example: wght=700,wdth=75; may be given several times", cxxopts::value<std::vector<std::string>>(vars), "<axis=value>")
             ("bold", "embolden the glyphs", cxxopts::value<bool>(config.bold))
             ;
         auto result = options.parse(argc, argv);
 
         if (result.count("help"))
         {
-            std::cout << options.help({"", "Font", "Output", "Appearance", "Texture", "Glyph layout"})
+            std::cout << options.help({"", "Font", "Output", "Appearance", "Texture", "Glyph layout", "Extension"})
                       << makeHelpEpilog() << std::endl;
             throw HelpException();
         }
@@ -180,6 +182,18 @@ Config ProgramOptions::parseCommandLine(int argc, char* argv[])
         if (!config.alignment.ver)
             throw std::runtime_error("invalid --align-vert");
 
+        for (const auto& v : vars) {
+            const auto ss = string_split(v, "=", false);
+            if (ss.size() != 2 || (ss[0].size() != 4) || ss[1].empty())
+                throw std::runtime_error("invalid --vars value");
+            
+            std::uint32_t tag = 0;
+            for (std::size_t i = 0; i < 4; ++i) {
+                char c = ss[0][i];
+                tag += std::uint32_t(c << (24 - i * 8));
+            }
+            config.vars.emplace(tag, std::stoi(ss[1]));
+        }
         return config;
     }
     catch (const cxxopts::OptionException& e)

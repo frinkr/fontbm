@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <set>
 #include <cstdint>
 #include <string>
@@ -80,6 +81,7 @@ struct Config
     bool backgroundTransparent = true;
     std::uint16_t fontSize = 16;
     std::int16_t ascender_override = -1;
+    std::map<std::uint32_t /*tag*/, std::int32_t /*value*/> vars;
     bool bold = false;
     Padding padding;
     Spacing spacing;

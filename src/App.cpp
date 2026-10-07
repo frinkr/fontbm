@@ -349,7 +349,7 @@ void App::execute(const int argc, char* argv[])
     if (config.verbose)
         std::cout << "freetype " << library.getVersionString() << "\n";
 
-    ft::Font font(library, config.fontFile, config.fontSize, config.ascender_override, 0, config.monochrome, config.bold);
+    ft::Font font(library, config.fontFile, config.fontSize, 0, config.monochrome, config.vars, config.ascender_override, config.bold);
 
     auto glyphs = collectGlyphInfo(font, config.chars);
     const auto pages = arrangeGlyphs(glyphs, config);

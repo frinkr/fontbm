@@ -3,6 +3,7 @@
 #include <cmath>
 #include "FtInclude.h"
 #include FT_SYNTHESIS_H
+#include FT_MULTIPLE_MASTERS_H
 #include "FtException.h"
 #include "../utils/StringMaker.h"
 
@@ -42,7 +43,7 @@ public:
         std::int32_t rsbDelta;
     };
 
-    Font(Library& library, const std::string& fontFile, int ptsize, int ascender_override, const int faceIndex, const bool monochrome, bool bold)
+    Font(Library& library, const std::string& fontFile, int ptsize, const int faceIndex, const bool monochrome, const std::map<std::uint32_t, std::int32_t>& vars, int ascender_override, bool bold)
         : library(library), monochrome_(monochrome), bold_(bold)
     {
         if (!library.library)
@@ -68,6 +69,8 @@ public:
                 FT_Done_Face(face);
                 throw Exception("Couldn't set font size", error);
             }
+
+            setVariableAxes(vars);
 
             /* Get the scalable font metrics for this font */
             const auto scale = face->size->metrics.y_scale;
@@ -127,6 +130,34 @@ public:
     ~Font()
     {
         FT_Done_Face(face);
+    }
+
+    void setVariableAxes(const std::map<std::uint32_t, std::int32_t>& vars)
+    {
+        if (vars.empty()) 
+            return;
+
+        if (!FT_HAS_MULTIPLE_MASTERS(face))
+            throw std::runtime_error("Font is not a variable font");
+
+        FT_MM_Var* mmVar = nullptr;
+        auto error = FT_Get_MM_Var(face, &mmVar);
+        if (!error)
+        {
+            std::vector<FT_Fixed> coords(mmVar->num_axis);
+            for (std::uint16_t i = 0; i < mmVar->num_axis; ++i) {
+                const auto it = vars.find(mmVar->axis[i].tag);
+                if (it != vars.end()) {
+                    coords[i] = (FT_Fixed)it->second << 16;
+                } else {
+                    coords[i] = mmVar->axis[i].def;
+                }
+            }
+            error = FT_Set_Var_Design_Coordinates(face, mmVar->num_axis, coords.data());
+            FT_Done_MM_Var(library.library, mmVar);
+        }
+        if (error)
+            throw std::runtime_error("Couldn't set variable font axes");
     }
 
     GlyphMetrics renderGlyph(std::uint32_t* buffer, std::uint32_t surfaceW, std::uint32_t surfaceH, int x, int y,
