@@ -52,6 +52,7 @@ option  | default | comment
 --align-vert | 1 | round glyph rectangle height up to a multiple of this value, must be greater than 0
 --ascender-override | -1 | override the font ascender (-1: disabled, 0: override with the maximum ascender of all glyphs, positive value: custom ascender in font units)
 --bold | | embolden the glyphs
+--vars | | variable font axes, in the form axis=value, for example: wght=700,wdth=75
 --verbose | | print the FreeType version being used
 --help | | print help and exit
 
